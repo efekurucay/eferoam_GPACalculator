@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center">
+                        <div class="mb-2 mb-md-0">
+                            <h4 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>İstatistikler
+                            </h4>
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Akademik performans analizi
+                            </p>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i>Geri Dön
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-12 col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center py-3">
+                    <h6 class="text-muted mb-2 small">
+                        <i class="fas fa-star me-1"></i>Genel Ortalama
+                    </h6>
+                    <h2 class="mb-0 text-primary">{{ current_gpa }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center py-3">
+                    <h6 class="text-muted mb-2 small">
+                        <i class="fas fa-users me-1"></i>Bölüm Ortalaması
+                    </h6>
+                    <h2 class="mb-0 text-warning">{{ department_avg }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center py-3">
+                    <h6 class="text-muted mb-2 small">
+                        <i class="fas fa-award me-1"></i>Toplam Kredi
+                    </h6>
+                    <h2 class="mb-0 text-success">{{ total_credits }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card h-100">
+                <div class="card-body text-center py-3">
+                    <h6 class="text-muted mb-2 small">
+                        <i class="fas fa-book me-1"></i>Toplam Ders
+                    </h6>
+                    <h2 class="mb-0 text-info">{{ total_courses }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-trophy me-2"></i>Bölüm Sıralaması
+                    </h5>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="mb-3 mb-md-0">
+                                <h6 class="text-muted mb-2">Sıralama</h6>
+                                <h3 class="text-primary mb-0">{{ user_rank }}/{{ total_students }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3 mb-md-0">
+                                <h6 class="text-muted mb-2">Yüzdelik Dilim</h6>
+                                <h3 class="text-success mb-0">%{{ percentile }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div>
+                                <h6 class="text-muted mb-2">Durum</h6>
+                                {% if current_gpa > department_avg %}
+                                    <span class="badge bg-success fs-6">Ortalamanın Üstünde</span>
+                                {% elif current_gpa < department_avg %}
+                                    <span class="badge bg-danger fs-6">Ortalamanın Altında</span>
+                                {% else %}
+                                    <span class="badge bg-warning fs-6">Ortalamada</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if course_averages %}
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-graduation-cap me-2"></i>Ders Bazlı Karşılaştırma
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ders Kodu</th>
+                                    <th>Ders Adı</th>
+                                    <th>Benim Notum</th>
+                                    <th>Benim Katkı Puanım</th>
+                                    <th>Sınıf Ortalaması</th>
+                                    <th>Öğrenci Sayısı</th>
+                                    <th>Sıralama</th>
+                                    <th>Yüzdelik</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in course_averages %}
+                                <tr>
+                                    <td>{{ course.code }}</td>
+                                    <td>{{ course.name }}</td>
+                                    <td>{{ course.my_grade }}</td>
+                                    <td>{{ course.my_point }}</td>
+                                    <td>{{ course.class_average }}</td>
+                                    <td>{{ course.total_students }}</td>
+                                    <td>{{ course.my_rank }}/{{ course.total_students }}</td>
+                                    <td>%{{ course.percentile }}</td>
+                                    <td>
+                                        {% if course.my_point > course.class_average %}
+                                            <span class="badge bg-success">Ortalamanın Üstünde</span>
+                                        {% elif course.my_point < course.class_average %}
+                                            <span class="badge bg-danger">Ortalamanın Altında</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Ortalamada</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-2">
+        <div class="col-12">
+            <div class="card mb-3">
+                <div class="card-body p-2 p-md-3">
+                    <div id="gpa_chart" style="min-height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body p-2 p-md-3">
+                    <div id="grades_chart" style="min-height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const config = {
+        responsive: true,
+        displayModeBar: false,
+        scrollZoom: false
+    };
+
+    // Mobil için grafik boyutlarını ayarla
+    function updateChartDimensions() {
+        const isMobile = window.innerWidth < 768;
+        const defaultHeight = isMobile ? 250 : 400;
+        const defaultMargins = isMobile ? 
+            {l: 40, r: 20, t: 40, b: 40} : 
+            {l: 50, r: 50, t: 50, b: 50};
+        
+        // GPA Grafiği
+        const gpaChart = document.getElementById('gpa_chart');
+        if (gpaChart) {
+            const gpaData = JSON.parse('{{ gpa_chart | safe }}');
+            gpaData.layout.height = defaultHeight;
+            gpaData.layout.margin = defaultMargins;
+            gpaData.layout.title.font.size = isMobile ? 16 : 20;
+            gpaData.layout.xaxis.tickfont = { size: isMobile ? 10 : 12 };
+            gpaData.layout.yaxis.tickfont = { size: isMobile ? 10 : 12 };
+            Plotly.newPlot('gpa_chart', gpaData.data, gpaData.layout, config);
+        }
+        
+        // Harf Notu Dağılımı
+        const gradesChart = document.getElementById('grades_chart');
+        if (gradesChart) {
+            const gradesData = JSON.parse('{{ grades_chart | safe }}');
+            gradesData.layout.height = defaultHeight;
+            gradesData.layout.margin = defaultMargins;
+            gradesData.layout.title.font.size = isMobile ? 16 : 20;
+            gradesData.layout.xaxis.tickfont = { size: isMobile ? 10 : 12 };
+            gradesData.layout.yaxis.tickfont = { size: isMobile ? 10 : 12 };
+            Plotly.newPlot('grades_chart', gradesData.data, gradesData.layout, config);
+        }
+    }
+
+    // Sayfa yüklendiğinde ve pencere boyutu değiştiğinde grafikleri güncelle
+    updateChartDimensions();
+    window.addEventListener('resize', updateChartDimensions);
+});
+</script>
+{% endblock %} 

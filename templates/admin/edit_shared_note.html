@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    {{ note.common_course.name }} - Ortak Not Düzenle
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-heading me-2"></i>Başlık
+                        </label>
+                        <input type="text" class="form-control" name="title" value="{{ note.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-align-left me-2"></i>İçerik
+                        </label>
+                        <textarea class="form-control" name="content" rows="5" required>{{ note.content }}</textarea>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Markdown formatında yazabilirsiniz.
+                        </small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-users me-2"></i>Erişim İzni Verilecek Öğrenci Numaraları
+                        </label>
+                        <textarea class="form-control" name="student_numbers" rows="5" required>{{ student_numbers }}</textarea>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Her satıra bir öğrenci numarası yazın. Örnek:
+                            <pre class="mt-2">123456789
+234567890
+345678901</pre>
+                        </small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('admin_shared_notes', course_id=note.common_course_id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

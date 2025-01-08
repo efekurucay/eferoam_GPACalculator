@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="auth-card">
+                    <div class="auth-header text-center mb-4">
+                        <div class="auth-icon mb-4">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <h1 class="auth-title">Eferoam GPA Calculator</h1>
+                        <p class="auth-subtitle">Hemen ücretsiz kayıt olun</p>
+                    </div>
+                    
+                    <form method="POST" class="auth-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="first_name" name="first_name" required placeholder="Ad">
+                                    <label for="first_name">
+                                        <i class="fas fa-user me-2"></i>Ad
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="last_name" name="last_name" required placeholder="Soyad">
+                                    <label for="last_name">
+                                        <i class="fas fa-user me-2"></i>Soyad
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="student_number" name="student_number" required placeholder="Öğrenci Numarası">
+                            <label for="student_number">
+                                <i class="fas fa-id-card me-2"></i>Öğrenci Numarası
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="email" name="email" required placeholder="E-posta">
+                            <label for="email">
+                                <i class="fas fa-envelope me-2"></i>E-posta
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="department" name="department" required style="height: 60px;">
+                                <option value="" disabled selected>Bölüm seçin</option>
+                                <option value="CSE">Bilgisayar Mühendisliği</option>
+                                <option value="EEE">Elektrik-Elektronik Mühendisliği</option>
+                                <option value="ME">Makine Mühendisliği</option>
+                                <option value="IE">Endüstri Mühendisliği</option>
+                                <option value="CE">İnşaat Mühendisliği</option>
+                                <option value="OTHER">Diğer</option>
+                            </select>
+                            <label for="department">
+                                <i class="fas fa-graduation-cap me-2"></i>Bölüm
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-3" id="other_department_container" style="display: none;">
+                            <input type="text" class="form-control" id="other_department" name="other_department" placeholder="Diğer Bölüm">
+                            <label for="other_department">
+                                <i class="fas fa-graduation-cap me-2"></i>Bölümünüzü Yazın
+                            </label>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input type="password" class="form-control" id="password" name="password" required placeholder="Şifre">
+                            <label for="password">
+                                <i class="fas fa-lock me-2"></i>Şifre
+                            </label>
+                            <div class="password-strength mt-2" style="display: none;">
+                                <div class="progress" style="height: 5px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small class="text-muted mt-1 d-block">Şifre güvenliği</small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg mb-4">
+                            <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                        </button>
+
+                        <p class="text-center mb-0">
+                            Zaten hesabınız var mı? 
+                            <a href="{{ url_for('login') }}" class="auth-link">
+                                Giriş Yapın
+                                <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-container {
+    min-height: calc(100vh - 76px);
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(79, 129, 189, 0.1) 0%, rgba(44, 82, 130, 0.1) 100%);
+    padding: 2rem 0;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.auth-icon {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.auth-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.auth-form .form-floating {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.auth-form .form-control,
+.auth-form .form-select {
+    height: 60px;
+    padding-left: 1rem;
+    font-size: 1rem;
+    border: 2px solid var(--border-color);
+    background: var(--background-color);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.auth-form .form-control:focus,
+.auth-form .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(79, 129, 189, 0.1);
+}
+
+.auth-form .form-floating label {
+    padding-left: 1rem;
+    color: var(--text-muted);
+}
+
+.auth-form .btn {
+    height: 55px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border: none;
+    box-shadow: 0 4px 6px rgba(79, 129, 189, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-form .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(79, 129, 189, 0.3);
+}
+
+.auth-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.auth-link:hover {
+    color: var(--primary-dark);
+}
+
+.password-strength .progress-bar {
+    transition: width 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .auth-card {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .auth-title {
+        font-size: 1.75rem;
+    }
+    
+    .auth-form .form-control,
+    .auth-form .form-select {
+        height: calc(2.5rem + 2px) !important;
+        font-size: 16px;
+        padding: 0.5rem 1rem;
+    }
+    
+    .auth-form .form-floating label {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .auth-form .btn {
+        height: 48px;
+        font-size: 1rem;
+    }
+    
+    .row {
+        margin: 0 -0.5rem;
+    }
+    
+    .col-md-6 {
+        padding: 0 0.5rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form animasyonu
+    gsap.from('.auth-card', {
+        opacity: 0,
+        y: 30,
+        duration: 1,
+        ease: 'power3.out'
+    });
+    
+    // İkon animasyonu
+    gsap.from('.auth-icon', {
+        opacity: 0,
+        scale: 0.5,
+        duration: 0.8,
+        delay: 0.3,
+        ease: 'back.out(1.7)'
+    });
+    
+    // Form elemanları animasyonu
+    gsap.from('.auth-form > *', {
+        opacity: 0,
+        y: 20,
+        duration: 0.8,
+        delay: 0.5,
+        stagger: 0.1,
+        ease: 'power3.out'
+    });
+
+    // Şifre güvenliği kontrolü
+    const passwordInput = document.getElementById('password');
+    const strengthMeter = document.querySelector('.password-strength');
+    const progressBar = strengthMeter.querySelector('.progress-bar');
+
+    passwordInput.addEventListener('focus', () => {
+        strengthMeter.style.display = 'block';
+    });
+
+    passwordInput.addEventListener('input', () => {
+        const password = passwordInput.value;
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 25;
+        if (password.match(/[a-z]/)) strength += 25;
+        if (password.match(/[A-Z]/)) strength += 25;
+        if (password.match(/[0-9]/)) strength += 25;
+        
+        progressBar.style.width = strength + '%';
+        
+        if (strength <= 25) {
+            progressBar.className = 'progress-bar bg-danger';
+        } else if (strength <= 50) {
+            progressBar.className = 'progress-bar bg-warning';
+        } else if (strength <= 75) {
+            progressBar.className = 'progress-bar bg-info';
+        } else {
+            progressBar.className = 'progress-bar bg-success';
+        }
+    });
+
+    // Diğer bölüm seçeneği kontrolü
+    const departmentSelect = document.getElementById('department');
+    const otherDepartmentContainer = document.getElementById('other_department_container');
+    const otherDepartmentInput = document.getElementById('other_department');
+
+    departmentSelect.addEventListener('change', () => {
+        if (departmentSelect.value === 'OTHER') {
+            otherDepartmentContainer.style.display = 'block';
+            otherDepartmentInput.required = true;
+        } else {
+            otherDepartmentContainer.style.display = 'none';
+            otherDepartmentInput.required = false;
+        }
+    });
+});
+</script>
+{% endblock %} 

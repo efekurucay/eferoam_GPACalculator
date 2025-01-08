@@ -1,0 +1,399 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-user-graduate me-2"></i>
+                        Hoş Geldin, {{ current_user.first_name }}!
+                    </h4>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-id-card me-2"></i>
+                        Öğrenci Numarası: {{ current_user.student_number }}
+                    </p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <select class="form-select" id="semester_filter">
+                            <option value="all">Tüm Dönemler</option>
+                            {% for semester in semesters %}
+                            <option value="{{ semester }}" {% if selected_semester == semester %}selected{% endif %}>
+                                {{ get_semester_display(semester) }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="btn-group me-3">
+                        <a href="{{ url_for('statistics') }}" class="btn btn-info">
+                            <i class="fas fa-chart-line me-2"></i>İstatistikler
+                        </a>
+                        <a href="{{ url_for('export_grades', format='excel') }}" class="btn btn-success">
+                            <i class="fas fa-file-excel me-2"></i>Excel
+                        </a>
+                        <a href="{{ url_for('export_grades', format='pdf') }}" class="btn btn-danger">
+                            <i class="fas fa-file-pdf me-2"></i>PDF
+                        </a>
+                    </div>
+                    <a href="{{ url_for('add_course') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Yeni Ders Ekle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if courses %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Dönem Ortalamaları</h5>
+                </div>
+                <div class="card-body">
+                    {% set semester_courses = {} %}
+                    {% for course in courses %}
+                        {% if course.semester_type not in semester_courses %}
+                            {% set _ = semester_courses.update({course.semester_type: []}) %}
+                        {% endif %}
+                        {% set _ = semester_courses[course.semester_type].append(course) %}
+                    {% endfor %}
+
+                    <ul class="list-group">
+                        {% for semester_type, semester_course_list in semester_courses.items()|sort %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-graduation-cap me-2"></i>{{ get_semester_display(semester_type) }}</span>
+                                <span class="badge bg-primary rounded-pill">
+                                    {{ "%.2f"|format(calculate_gpa(semester_course_list)) }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Genel Ortalama</h5>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="display-1 text-primary mb-0">{{ "%.2f"|format(calculate_gpa(courses)) }}</h2>
+                    <p class="text-muted">Genel Ağırlıklı Not Ortalaması</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="fas fa-book me-2"></i>Derslerim</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-calendar-alt me-2"></i>Dönem</th>
+                            <th><i class="fas fa-hashtag me-2"></i>Ders Kodu</th>
+                            <th><i class="fas fa-book-open me-2"></i>Ders Adı</th>
+                            <th><i class="fas fa-award me-2"></i>Kredi</th>
+                            <th><i class="fas fa-certificate me-2"></i>AKTS</th>
+                            <th><i class="fas fa-percent me-2"></i>MT%</th>
+                            <th><i class="fas fa-percent me-2"></i>Others%</th>
+                            <th><i class="fas fa-percent me-2"></i>Final%</th>
+                            <th><i class="fas fa-pen me-2"></i>Midterm</th>
+                            <th><i class="fas fa-tasks me-2"></i>Others</th>
+                            <th><i class="fas fa-flag-checkered me-2"></i>Final</th>
+                            <th><i class="fas fa-calculator me-2"></i>Total</th>
+                            <th><i class="fas fa-star me-2"></i>Harf</th>
+                            <th><i class="fas fa-chart-bar me-2"></i>Katkı</th>
+                            <th><i class="fas fa-cog me-2"></i>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses|sort(attribute='semester_type') %}
+                            <tr class="semester-row" data-semester="{{ course.semester_type }}">
+                                <td>{{ get_semester_display(course.semester_type) }}</td>
+                                <td>{{ course.code }}</td>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.credit }}</td>
+                                <td>{{ course.akts }}</td>
+                                <td>{{ course.midterm_percentage }}%</td>
+                                <td>{{ course.others_percentage }}%</td>
+                                <td>{{ course.final_percentage }}%</td>
+                                <td>{{ "%.2f"|format(course.midterm_grade) if course.midterm_grade else "-" }}</td>
+                                <td>{{ "%.2f"|format(course.others_grade) if course.others_grade else "-" }}</td>
+                                <td>{{ "%.2f"|format(course.final_grade) if course.final_grade else "-" }}</td>
+                                <td>{{ "%.2f"|format(course.total_grade) if course.total_grade else "-" }}</td>
+                                <td>
+                                    <span class="badge {% if course.grade in ['AA', 'BA', 'BB'] %}bg-success
+                                                      {% elif course.grade in ['CB', 'CC'] %}bg-info
+                                                      {% elif course.grade in ['DC', 'DD'] %}bg-warning
+                                                      {% elif course.grade %}bg-danger{% else %}bg-secondary{% endif %}">
+                                        {{ course.grade if course.grade else "-" }}
+                                    </span>
+                                </td>
+                                <td>{{ "%.2f"|format(course.contribution_point) if course.contribution_point else "-" }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ url_for('update_grades', course_id=course.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-info" 
+                                                onclick="openSimulation({{ course.id }}, '{{ course.name }}', 
+                                                                      {{ course.midterm_percentage }}, 
+                                                                      {{ course.others_percentage }}, 
+                                                                      {{ course.final_percentage }},
+                                                                      {{ course.midterm_grade or 'null' }}, 
+                                                                      {{ course.others_grade or 'null' }}, 
+                                                                      {{ course.final_grade or 'null' }})">
+                                            <i class="fas fa-calculator"></i>
+                                        </button>
+                                        <a href="{{ url_for('course_notes', course_id=course.id) }}" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-sticky-note"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-danger" 
+                                                onclick="confirmDelete({{ course.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                    <form id="delete-form-{{ course.id }}" 
+                                          action="{{ url_for('delete_course', course_id=course.id) }}" 
+                                          method="POST" style="display: none;">
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+            <h4>Henüz ders eklenmemiş.</h4>
+            <p class="text-muted">Ders ekleyerek not ortalamanızı hesaplamaya başlayabilirsiniz.</p>
+            <a href="{{ url_for('add_course') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>İlk Dersi Ekle
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Simülasyon Modal -->
+<div class="modal fade" id="simulationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-calculator me-2"></i>
+                    Not Simülasyonu
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6 id="courseName" class="mb-3 text-primary"></h6>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="sim_midterm" step="0.01" min="0" max="100">
+                            <label>
+                                <i class="fas fa-pen me-2"></i>Vize (<span id="midtermPercent"></span>%)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="sim_others" step="0.01" min="0" max="100">
+                            <label>
+                                <i class="fas fa-tasks me-2"></i>Diğer (<span id="othersPercent"></span>%)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="sim_final" step="0.01" min="0" max="100">
+                            <label>
+                                <i class="fas fa-flag-checkered me-2"></i>Final (<span id="finalPercent"></span>%)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light h-100">
+                            <div class="card-body text-center">
+                                <h6 class="card-subtitle mb-2 text-muted">Toplam Not</h6>
+                                <h3 id="totalGrade" class="mb-0">-</h3>
+                                <span id="letterGrade" class="badge bg-secondary mt-2">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
+    <a href="{{ url_for('reminders') }}" class="btn btn-warning btn-lg rounded-circle shadow">
+        <i class="fas fa-bell"></i>
+        {% set upcoming_count = reminders|length if reminders is defined else 0 %}
+        {% if upcoming_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ upcoming_count }}
+            </span>
+        {% endif %}
+    </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const semesterFilter = document.getElementById('semester_filter');
+    const rows = document.querySelectorAll('.semester-row');
+
+    function filterRows(semester) {
+        rows.forEach(row => {
+            if (semester === 'all' || row.dataset.semester === semester) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    if (semesterFilter) {
+        semesterFilter.addEventListener('change', function() {
+            const selectedSemester = this.value;
+            filterRows(selectedSemester);
+            
+            // URL'i güncelle
+            const url = new URL(window.location);
+            if (selectedSemester === 'all') {
+                url.searchParams.delete('semester');
+            } else {
+                url.searchParams.set('semester', selectedSemester);
+            }
+            window.history.pushState({}, '', url);
+        });
+
+        // Sayfa yüklendiğinde URL'deki semester parametresini kontrol et
+        const urlParams = new URLSearchParams(window.location.search);
+        const semester = urlParams.get('semester');
+        if (semester) {
+            semesterFilter.value = semester;
+            filterRows(semester);
+        }
+    }
+});
+
+function confirmDelete(courseId) {
+    if (confirm('Bu dersi silmek istediğinizden emin misiniz?')) {
+        document.getElementById('delete-form-' + courseId).submit();
+    }
+}
+
+function openSimulation(courseId, courseName, mt, others, final, mtGrade, othersGrade, finalGrade) {
+    const modal = new bootstrap.Modal(document.getElementById('simulationModal'));
+    
+    // Başlığı ayarla
+    document.getElementById('courseName').textContent = courseName;
+    
+    // Yüzdeleri göster
+    document.getElementById('midtermPercent').textContent = mt;
+    document.getElementById('othersPercent').textContent = others;
+    document.getElementById('finalPercent').textContent = final;
+    
+    // Mevcut notları göster
+    document.getElementById('sim_midterm').value = mtGrade || '';
+    document.getElementById('sim_others').value = othersGrade || '';
+    document.getElementById('sim_final').value = finalGrade || '';
+    
+    // Not hesaplama fonksiyonu
+    function calculateGrade() {
+        const mtVal = parseFloat(document.getElementById('sim_midterm').value) || 0;
+        const othersVal = parseFloat(document.getElementById('sim_others').value) || 0;
+        const finalVal = parseFloat(document.getElementById('sim_final').value) || 0;
+        
+        let total = 0;
+        let hasGrade = false;
+        
+        if (document.getElementById('sim_midterm').value) {
+            total += mtVal * (mt / 100);
+            hasGrade = true;
+        }
+        if (document.getElementById('sim_others').value) {
+            total += othersVal * (others / 100);
+            hasGrade = true;
+        }
+        if (document.getElementById('sim_final').value) {
+            total += finalVal * (final / 100);
+            hasGrade = true;
+        }
+        
+        if (!hasGrade) {
+            document.getElementById('totalGrade').textContent = '-';
+            document.getElementById('letterGrade').textContent = '-';
+            document.getElementById('letterGrade').className = 'badge bg-secondary mt-2';
+            return;
+        }
+        
+        // Yuvarlama: .5 ve üzeri yukarı, altı aşağı
+        total = Math.floor(total + 0.5);
+        
+        document.getElementById('totalGrade').textContent = total.toFixed(2);
+        
+        let letterGrade, badgeClass;
+        if (total >= 88) {
+            letterGrade = 'AA';
+            badgeClass = 'bg-success';
+        } else if (total >= 81) {
+            letterGrade = 'BA';
+            badgeClass = 'bg-success';
+        } else if (total >= 74) {
+            letterGrade = 'BB';
+            badgeClass = 'bg-success';
+        } else if (total >= 67) {
+            letterGrade = 'CB';
+            badgeClass = 'bg-info';
+        } else if (total >= 60) {
+            letterGrade = 'CC';
+            badgeClass = 'bg-info';
+        } else if (total >= 53) {
+            letterGrade = 'DC';
+            badgeClass = 'bg-warning';
+        } else if (total >= 46) {
+            letterGrade = 'DD';
+            badgeClass = 'bg-warning';
+        } else {
+            letterGrade = 'FF';
+            badgeClass = 'bg-danger';
+        }
+        
+        document.getElementById('letterGrade').textContent = letterGrade;
+        document.getElementById('letterGrade').className = `badge ${badgeClass} mt-2`;
+    }
+    
+    // Input event listeners
+    ['sim_midterm', 'sim_others', 'sim_final'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculateGrade);
+    });
+    
+    // İlk hesaplamayı yap
+    calculateGrade();
+    
+    // Modal'ı göster
+    modal.show();
+}
+</script>
+{% endblock %} 

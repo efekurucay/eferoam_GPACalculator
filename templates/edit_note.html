@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>
+                    {{ note.course.name }} - Not Düzenle
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-heading me-2"></i>Başlık
+                        </label>
+                        <input type="text" class="form-control" name="title" value="{{ note.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-align-left me-2"></i>İçerik
+                        </label>
+                        <textarea class="form-control" name="content" rows="5" required>{{ note.content }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="is_reminder" id="is_reminder"
+                                   {% if note.is_reminder %}checked{% endif %}>
+                            <label class="form-check-label" for="is_reminder">
+                                <i class="fas fa-bell me-2"></i>Hatırlatıcı olarak ekle
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3" id="due_date_group" style="display: {% if note.is_reminder %}block{% else %}none{% endif %};">
+                        <label class="form-label">
+                            <i class="fas fa-clock me-2"></i>Son Tarih
+                        </label>
+                        <input type="datetime-local" class="form-control" name="due_date"
+                               value="{{ note.due_date.strftime('%Y-%m-%dT%H:%M') if note.due_date else '' }}"
+                               {% if note.is_reminder %}required{% endif %}>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('course_notes', course_id=note.course_id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('is_reminder').addEventListener('change', function() {
+    const dueDateGroup = document.getElementById('due_date_group');
+    dueDateGroup.style.display = this.checked ? 'block' : 'none';
+    
+    const dueDateInput = document.querySelector('input[name="due_date"]');
+    if (this.checked) {
+        dueDateInput.required = true;
+    } else {
+        dueDateInput.required = false;
+        dueDateInput.value = '';
+    }
+});
+</script>
+{% endblock %} 

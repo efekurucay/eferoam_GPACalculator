@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-bell me-2"></i>
+                        Yaklaşan Hatırlatıcılar
+                    </h4>
+                    <p class="card-text text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Tüm dersleriniz için ayarladığınız hatırlatıcılar
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if reminders %}
+    <div class="row">
+        {% for reminder in reminders %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 border-warning">
+                    <div class="card-header bg-warning bg-opacity-10">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-bell text-warning me-2"></i>
+                                {{ reminder.title }}
+                            </h5>
+                            <span class="badge bg-warning text-dark">
+                                {{ reminder.course.code }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">
+                            <i class="fas fa-book me-2"></i>
+                            {{ reminder.course.name }}
+                        </h6>
+                        <p class="card-text">{{ reminder.content }}</p>
+                        <p class="card-text">
+                            <small class="text-danger">
+                                <i class="fas fa-clock me-2"></i>
+                                Son Tarih: {{ reminder.due_date.strftime('%d.%m.%Y %H:%M') }}
+                            </small>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-2"></i>
+                                {{ reminder.created_at.strftime('%d.%m.%Y %H:%M') }}
+                            </small>
+                            <div class="btn-group">
+                                <a href="{{ url_for('edit_note', note_id=reminder.id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        onclick="confirmDelete({{ reminder.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-bell fa-4x text-muted mb-3"></i>
+            <h4>Yaklaşan hatırlatıcı bulunmuyor.</h4>
+            <p class="text-muted">Derslerinize hatırlatıcı ekleyerek önemli tarihleri takip edebilirsiniz.</p>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left me-2"></i>Derslere Dön
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<form id="delete-form" method="POST" style="display: none;"></form>
+
+<script>
+function confirmDelete(noteId) {
+    if (confirm('Bu hatırlatıcıyı silmek istediğinizden emin misiniz?')) {
+        const form = document.getElementById('delete-form');
+        form.action = "{{ url_for('delete_note', note_id=0) }}".replace('0', noteId);
+        form.submit();
+    }
+}
+</script>
+{% endblock %} 

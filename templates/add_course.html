@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>Yeni Ders Ekle
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="courseForm">
+                    {% if common_courses %}
+                    <div class="mb-4">
+                        <div class="form-floating">
+                            <select class="form-select" id="common_course_id" name="common_course_id">
+                                <option value="">Yeni ders ekle</option>
+                                {% for course in common_courses|sort(attribute='semester_type') %}
+                                <option value="{{ course.id }}">
+                                    {{ course.code }} - {{ course.name }} ({{ get_semester_display(course.semester_type) }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <label for="common_course_id">
+                                <i class="fas fa-list me-2"></i>Ortak Ders Seç
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div id="customCourseForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="code" name="code" required>
+                                    <label for="code">
+                                        <i class="fas fa-hashtag me-2"></i>Ders Kodu
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                    <label for="name">
+                                        <i class="fas fa-book-open me-2"></i>Ders Adı
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <select class="form-select" id="semester_type" name="semester_type" required>
+                                        <option value="">Seçiniz...</option>
+                                        <option value="1-guz">1. Sınıf Güz</option>
+                                        <option value="1-bahar">1. Sınıf Bahar</option>
+                                        <option value="2-guz">2. Sınıf Güz</option>
+                                        <option value="2-bahar">2. Sınıf Bahar</option>
+                                        <option value="3-guz">3. Sınıf Güz</option>
+                                        <option value="3-bahar">3. Sınıf Bahar</option>
+                                        <option value="4-guz">4. Sınıf Güz</option>
+                                        <option value="4-bahar">4. Sınıf Bahar</option>
+                                    </select>
+                                    <label for="semester_type">
+                                        <i class="fas fa-calendar-alt me-2"></i>Dönem
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="credit" name="credit" required step="0.5" min="0">
+                                    <label for="credit">
+                                        <i class="fas fa-award me-2"></i>Kredi
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="akts" name="akts" required min="1">
+                                    <label for="akts">
+                                        <i class="fas fa-certificate me-2"></i>AKTS
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                        <h6 class="mb-3 text-muted">
+                            <i class="fas fa-percent me-2"></i>Not Yüzdeleri
+                        </h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="midterm_percentage" name="midterm_percentage" 
+                                           required min="0" max="100">
+                                    <label for="midterm_percentage">
+                                        <i class="fas fa-pen me-2"></i>Vize %
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="others_percentage" name="others_percentage" 
+                                           required min="0" max="100">
+                                    <label for="others_percentage">
+                                        <i class="fas fa-tasks me-2"></i>Diğer %
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number" class="form-control" id="final_percentage" name="final_percentage" 
+                                           required min="0" max="100">
+                                    <label for="final_percentage">
+                                        <i class="fas fa-flag-checkered me-2"></i>Final %
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Geri Dön
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Dersi Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const commonCourseSelect = document.getElementById('common_course_id');
+    const customCourseForm = document.getElementById('customCourseForm');
+    const requiredFields = customCourseForm.querySelectorAll('[required]');
+
+    if (commonCourseSelect) {
+        commonCourseSelect.addEventListener('change', function() {
+            const isCustomCourse = !this.value;
+            customCourseForm.style.display = isCustomCourse ? 'block' : 'none';
+            
+            requiredFields.forEach(field => {
+                field.required = isCustomCourse;
+            });
+        });
+    }
+
+    form.addEventListener('submit', function(e) {
+        if (!commonCourseSelect || !commonCourseSelect.value) {
+            const midterm = parseFloat(document.getElementById('midterm_percentage').value) || 0;
+            const others = parseFloat(document.getElementById('others_percentage').value) || 0;
+            const final = parseFloat(document.getElementById('final_percentage').value) || 0;
+            
+            if (midterm + others + final !== 100) {
+                e.preventDefault();
+                alert('Not yüzdelerinin toplamı 100 olmalıdır!');
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 
